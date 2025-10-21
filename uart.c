@@ -1,6 +1,7 @@
 #include <stdint.h>
+#include "task.h"
 #include "uart.h"
-
+#include "kernel.h"
 #define UART0_BASE 0x4000C000
 #define UART_DR    (*(volatile uint32_t *)(UART0_BASE + 0x000))
 #define UART_FR    (*(volatile uint32_t *)(UART0_BASE + 0x018))
@@ -29,33 +30,45 @@ static volatile uint16_t rx_buffer_tail = 0; // Vi tri de doc ky tu ra
  * @brief "Nguoi nhan thu" - Trinh xu ly ngat cho UART0.
  * Ham nay duoc phan cung goi tu dong.
  */
-void UART0_Handler(void) {
+//void UART0_Handler(void) {
     // Doc ky tu tu thanh ghi du lieu
-    char c = (char)UART_DR;
-
+  //  char c = (char)UART_DR;
+  // uart_puts("day la uart0_hander");
     // Tinh vi tri tiep theo cho con tro head
-    uint16_t next_head = (rx_buffer_head + 1) % RX_BUFFER_SIZE;
+   // uint16_t next_head = (rx_buffer_head + 1) % RX_BUFFER_SIZE;
 
     // Chi them vao buffer neu no chua day (de tranh ghi de len du lieu cu)
-    if (next_head != rx_buffer_tail) {
-        rx_buffer[rx_buffer_head] = c;
-        rx_buffer_head = next_head;
-    }
+   // if (next_head != rx_buffer_tail) {
+     //   rx_buffer[rx_buffer_head] = c;
+    //    rx_buffer_head = next_head;
+   // }
     
     // (Khong can xoa co ngat tren QEMU, nhung tren phan cung that se can)
     // UART_ICR = (1 << 4);
+//}
+//
+volatile int uart_debug_flag = 0;
+void UART0_Handler(void) {
+    char c = (char)UART_DR;
+    uart_debug_flag =c ; 
+    //echo 
+    uart_putchar(c);
+    rx_buffer[rx_buffer_head] = c;
+    rx_buffer_head = (rx_buffer_head + 1) % RX_BUFFER_SIZE;
+
+    extern tcb_t* taskC;
+    taskC->state = TASK_READY;  // đánh thức Task C
+    ICSR |= (1 << 28);               // set PendSV để chuyển ngữ cảnh
 }
+
 
 void uart_init(void) {
- 	// 1. Bat ngat nhan (Receive Interrupt Mask) trong module UART
+ 	UART_CR = UART_CR_TXE | UART_CR_RXE | UART_CR_UARTEN;
     UART_IM |= UART_IM_RXIM;
-
-    // 2. Bat duong day ngat so 5 (cua UART0) trong bo dieu khien NVIC
     NVIC_EN0 |= (1 << 5);
-
 }
 void uart_putchar(char c) {
-       	while (UART_FR & UART_FR_TXFF);
+       	
        	UART_DR = c;
 }
 void uart_puts(const char* s) {
@@ -75,7 +88,7 @@ char uart_getchar(void) {
 }
 
 // In 1 ký tự
-extern void uart_putchar(char c);
+
 
 // Hàm in số nguyên (32-bit) ra UART
 void uart_puti(int value) {
@@ -111,4 +124,6 @@ void uart_puti(int value) {
     }
 }
 
-
+int uart_available(void) {
+    return rx_buffer_head != rx_buffer_tail;
+}

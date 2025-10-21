@@ -51,6 +51,19 @@ void task_monitor_func(void) {
         uart_puts("--------------------------\n");
     }
 }
+// task ban phim 
+void taskC_func(void) {
+    while (1) {
+	    uart_puts("[DEBUG] Task C da duoc goi!\n");
+        if (uart_available()) {
+            char c = uart_getchar();
+            uart_puts("[TaskC] Xu ly lenh tu ban phim...\n");
+            for (volatile int i = 0; i < 500000; i++); // giả lập xử lý nặng
+            uart_puts("[TaskC] Hoan thanh xu ly!\n");
+        }
+        task_delay(100);
+    }
+}
 
 
 int main(void) {
@@ -58,15 +71,16 @@ int main(void) {
     uart_init();
     uart_puts("EonOS Dang Khoi Dong... Giai Doan 11: Giam Sat He Thong\n");
     
-    tcb_t* taskA = task_create(taskA_func, "Task A", 10, 256);
-    tcb_t* taskB = task_create(taskB_func, "Task B", 10, 256);
+    tcb_t* taskA = task_create(taskA_func, "Task A", 10, 512);
+    tcb_t* taskB = task_create(taskB_func, "Task B", 10, 512);
     tcb_t* monitor = task_create(task_monitor_func, "Monitor", 20, 512);
-    
+    tcb_t* TaskC = task_create(taskC_func, "Task C" , 0 , 512);
     kernel_add_task(taskA);
     kernel_add_task(taskB);
     kernel_add_task(monitor);
+    kernel_add_task(TaskC);
     
-    uart_puts("Da them 3 tac vu. Bat dau bo lap lich...\n");
+    uart_puts("Da them 4 tac vu. Bat dau bo lap lich...\n");
     
     kernel_launch();
 //   uart_init();

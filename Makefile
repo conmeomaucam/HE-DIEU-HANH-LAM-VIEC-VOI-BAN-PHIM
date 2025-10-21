@@ -15,7 +15,9 @@ $(TARGET).elf: $(OBJECTS)
 %.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 qemu: all
-	qemu-system-arm -M lm3s6965evb -kernel $(TARGET).elf -nographic
+	
+	qemu-system-arm -M lm3s6965evb -kernel $(TARGET).elf -serial stdio -monitor none
+
 clean:
 	rm -f *.o *.elf
 .PHONY: all qemu clean

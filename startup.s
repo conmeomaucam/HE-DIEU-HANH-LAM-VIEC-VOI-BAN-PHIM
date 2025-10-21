@@ -2,6 +2,8 @@
 .cpu cortex-m3
 .thumb
 .extern scheduler_priority_based
+.extern PendSV_Handler
+
 .extern current_task
 .weak NMI_Handler, HardFault_Handler, SVC_Handler, PendSV_Handler, SysTick_Handler
 .thumb_set NMI_Handler, Default_Handler
@@ -10,6 +12,8 @@
 .word _estack, _reset_handler + 1, NMI_Handler + 1, HardFault_Handler + 1
 .word 0, 0, 0, 0, 0, 0, 0, SVC_Handler + 1, 0, 0, PendSV_Handler + 1, SysTick_Handler + 1
 .word UART0_Handler + 1 // IRQ 5 (UART0)
+.word PendSV_Handler + 1
+
 .word 0                 // IRQ 6 (UART1)
 .section .text
 .global _reset_handler
@@ -46,7 +50,7 @@ PendSV_Handler:
     ldr r1, =current_task
     ldr r2, [r1]
     str r0, [r2]
-    bl scheduler_round_robin
+    bl scheduler_priority_based 
     ldr r2, [r1]
     ldr r0, [r2]
     ldmia r0!, {r4-r11}
