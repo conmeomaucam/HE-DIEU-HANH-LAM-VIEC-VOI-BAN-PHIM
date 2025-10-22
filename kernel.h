@@ -17,10 +17,12 @@
 #define PENDSVSET_BIT   (1 << 28)
 
 #define CPU_CLOCK_HZ    12000000
-#define TICK_RATE_HZ    1000 // Tang toc SysTick len 1000Hz (1ms moi nhip)
+#define TICK_RATE_HZ    10 // Tang toc SysTick len 1000Hz (1ms moi nhip)
 void PendSV_Handler(void);
 void kernel_init(void);
 void kernel_add_task(tcb_t* new_task);
 void kernel_launch(void);
 uint32_t kernel_get_ticks(void);
+const tcb_t* kernel_get_task_list_head(void);
+void heap_init(void);
 #endif
