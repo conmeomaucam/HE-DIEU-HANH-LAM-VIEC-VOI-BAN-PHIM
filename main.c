@@ -2,9 +2,10 @@
 #include "uart.h"
 #include "kernel.h"
 #include "task.h"
-//#include "semaphore.h"
+#include "semaphore.h"
 
-//semaphore_t sem_uart;          // semaphore dùng để báo có dữ liệu UART
+
+semaphore_t sem_test;          // semaphore dùng để báo có dữ liệu UART
 extern volatile int uart_int_count;
 
 static const char* state_to_str(task_state_t st) {
@@ -19,13 +20,17 @@ static const char* state_to_str(task_state_t st) {
 void taskA_func(void) {
     while (1) {
         uart_puts("[A] running\n");
-        task_delay(100);
+        
+	 semaphore_wait(&sem_test);
+	 task_delay(100);
+
     }
 }
 
 void taskB_func(void) {
     while (1) {
         uart_puts("[B] running\n");
+	semaphore_signal(&sem_test);
         task_delay(100);
     }
 }
@@ -55,7 +60,7 @@ void task_monitor_func(void) {
 void taskC_func(void) {
     while (1) {
         // dùng semaphore nếu ISR đã signal; hoặc có thể check uart_available()
-       // semaphore_wait(&sem_uart);
+        semaphore_wait(&sem_test);
         char c = uart_getchar();
         uart_puts("[C] key: ");
         uart_putchar(c);
@@ -69,7 +74,7 @@ int main(void) {
     uart_init();
 
     // Semaphore bắt đầu = 0 để “chờ sự kiện”
-//    semaphore_init(&sem_uart, 0);
+    semaphore_init(&sem_test,0);
 
     uart_puts("Booting...\n");
 

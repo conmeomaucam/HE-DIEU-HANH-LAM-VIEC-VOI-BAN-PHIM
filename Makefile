@@ -1,11 +1,12 @@
 TARGET = eonos
 LINKER_SCRIPT = linker.ld
 
-SOURCES_C = main.c uart.c kernel.c heap.c task.c
+SOURCES_C = main.c uart.c kernel.c heap.c task.c semaphore.c
 SOURCES_S = startup.s
 CC = arm-none-eabi-gcc
 
 CFLAGS = -mcpu=cortex-m3 -mthumb -nostdlib -ffreestanding -g -O0
+CFLAGS += -Ithird_party/CMSIS/Core/Include
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_S:.s=.o)
 
 $(TARGET).elf: $(OBJECTS)

@@ -12,6 +12,7 @@ typedef enum {
     TASK_READY,     // San sang de chay
     TASK_RUNNING,   // Dang duoc CPU thuc thi
     TASK_SLEEPING,  // Dang "ngu", cho den mot thoi diem nhat dinh
+     TASK_BLOCKED ,
 } task_state_t;
 
 // "Ho so nhan su" chi tiet cua moi tac vu
